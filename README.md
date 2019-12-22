@@ -9,7 +9,7 @@ Solves the user entered Sudoku boards with commonly known strategies* which are:
 - Pointing pairs
 - X-wing
 
-(*)Strategies are not complete yet, new ones will be added one by one once completed.
+_(*)Strategies are not complete yet, new ones will be added one by one once completed.
 
 User enters the board in 81 digit string format where 0s represents empty cells in the board:
 
@@ -19,7 +19,7 @@ Scrpit converts the string into 9x9 dataframe:
 
 ![plot2](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/board_initial.JPG)
 
-And starts applying the strategies in the listed order which is given above. Any changes in the board results in recursively calling the solver function again:
+And starts applying the strategies in the listed order which is given above. Any changes in the board results in recursively calling the solver function again. Changes in the board are logged and displayed in Row&Column pair indication:
 
 ```python
 R4C5=5 : Hidden Singles (row)
