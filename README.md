@@ -12,8 +12,9 @@ Solves the user entered Sudoku boards with commonly known strategies* which are:
 _(*)Strategies are not complete yet, new ones will be added one by one once completed._
 
 User enters the board in 81 digit string format where 0s represents empty cells in the board:
-
-![plot1](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/board_input%20string.JPG)
+``` python
+grid = "000000700000001080300020004090002060005000800080700050200070003060500000003000000"
+```
 
 Scrpit converts the string into 9x9 dataframe:
 
