@@ -20,7 +20,11 @@ Scrpit converts the string into 9x9 dataframe:
 
 ![plot2](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/board_initial.JPG)
 
-And starts applying the strategies in the listed order which is given above. Any changes in the board results in recursively calling the solver function again. Changes in the board are logged and displayed in Row&Column pair indication:
+Candidates for cells are kept in a separate dataframe:
+
+![plot4](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/candidates.JPG)
+
+Strategies are implemented in the listed order which is given above. Any changes in the board or candidates results in recursively calling the solver function again. Changes in the board are logged and displayed in Row&Column pair notation:
 
 ```python
 R4C5=5 : Hidden Singles (row)
