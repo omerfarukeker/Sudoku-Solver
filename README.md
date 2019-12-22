@@ -9,7 +9,7 @@ Solves the user entered Sudoku boards with commonly known strategies* which are:
 - Pointing pairs
 - X-wing
 
-_(*)Strategies are not complete yet, new ones will be added one by one once completed.
+_(*)Strategies are not complete yet, new ones will be added one by one once completed._
 
 User enters the board in 81 digit string format where 0s represents empty cells in the board:
 
