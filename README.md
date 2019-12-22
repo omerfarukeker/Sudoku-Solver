@@ -12,17 +12,21 @@ Solves the user entered Sudoku boards with commonly known strategies* which are:
 (*)Strategies are not complete yet, new ones will be added one by one once completed.
 
 User enters the board in 81 digit string format where 0s represents empty cells in the board:
-![plot1]("https://github.com/omerfarukeker/Sudoku-Solver/blob/master/board_input%20string.JPG")
+![plot1](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/board_input%20string.JPG)
 
 Scrpit converts the string into 9x9 dataframe:
-![plot2]("https://github.com/omerfarukeker/Sudoku-Solver/blob/master/board_initial.JPG")
+![plot2](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/board_initial.JPG)
 
 And starts applying the strategies in the listed order which is given above. Any changes in the board results in recursively calling the solver function again:
 
 R4C5=5 : Hidden Singles (row)
+
 R5C2=3 : Hidden Singles (col)
+
 R9C4=2 : Hidden Singles (col)
+
 R3C6=7 : Hidden Singles (col)
+
 R1C8=3 : Hidden Singles (col)
 R1C6=5 : Hidden Singles (square)
 R6C3=2 : Hidden Singles (square)
@@ -109,4 +113,4 @@ R8C6=4 : Single Candidate
 R6C5=1 : Single Candidate
 
 After solving the board, it shows the final look of it and how much time it took:
-![plot3]("https://github.com/omerfarukeker/Sudoku-Solver/blob/master/board_final.JPG")
+![plot3](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/board_final.JPG)
