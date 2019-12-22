@@ -15,12 +15,13 @@ User enters the board in 81 digit string format where 0s represents empty cells 
 ![plot1](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/board_input%20string.JPG)
 
 Scrpit converts the string into 9x9 dataframe:
+
 ![plot2](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/board_initial.JPG)
 
 And starts applying the strategies in the listed order which is given above. Any changes in the board results in recursively calling the solver function again:
 
-R4C5=5 : Hidden Singles (row)
-R5C2=3 : Hidden Singles (col)
+R4C5=5 : Hidden Singles (row)\n
+R5C2=3 : Hidden Singles (col)\n
 R9C4=2 : Hidden Singles (col)
 R3C6=7 : Hidden Singles (col)
 R1C8=3 : Hidden Singles (col)
