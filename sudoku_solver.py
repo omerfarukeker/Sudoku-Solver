@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Dec 22 10:57:37 2019
-SUDOKU SOLVER V12
--box line reduction added
+Created on Mon Dec 23 00:15:44 2019
+SUDOKU SOLVER V13
+- all function return values removed
+- y-wing added
 @author: omerzulal
 """
 
@@ -187,8 +188,8 @@ def single_cand(board,cands):
                     board.iloc[row,col] = cand
                     cands = candidates_update(cands,row,col,cand)
     if ischanged:
-        board,cands = solver(board,cands)               
-    return board,cands
+        solver(board,cands)               
+    
 
 #%% HIDDEN SINGLES
 def hidden_singles(board,cands):
@@ -252,8 +253,8 @@ def hidden_singles(board,cands):
                             except:
                                 print("except")
     if ischanged:
-        board,cands = solver(board,cands)                       
-    return board,cands
+        solver(board,cands)                       
+    
 
 #%% HIDDEN PAIRS
 def hidden_pairs(board,cands):
@@ -399,9 +400,9 @@ def hidden_pairs(board,cands):
                         print(f"R{inx[0]}C{inx[1]}     Hidden Pairs (square) {pairvals}")
 
     if ischanged:
-        board,cands = solver(board,cands)
+        solver(board,cands)
         
-    return board,cands  
+      
 
 #%% HIDDEN TRIPLES (squares is missing)
     
@@ -463,8 +464,8 @@ def hidden_triples(board,cands):
                     cands[col][rowx] = np.array(temp)
 
     if ischanged:
-        board,cands = solver(board,cands)    
-    return board,cands 
+        solver(board,cands)    
+     
 
 #%% NAKED PAIRS
 def naked_pairs(board,cands):
@@ -570,9 +571,9 @@ def naked_pairs(board,cands):
             
         
     if ischanged:
-        board,cands = solver(board,cands)
+        solver(board,cands)
         
-    return board,cands
+    
 
 #%% NAKED TRIPLES (squares missing)
 import itertools
@@ -646,55 +647,7 @@ def naked_triples(board,cands):
                 cands[col] = use 
                 
     if ischanged:
-        board,cands = solver(board,cands)
-    return board,cands
-
-#%% X-WING  
-def x_wing(board,cands):
-    #check xwings for both rows and columns
-    for rowcol in ["rows","cols"]:
-        if rowcol == "cols":
-            cands = cands.T
-        ischanged = 0
-        #construct candidate table
-        wings = []
-        for i in range(1,10):
-            wing = []
-            for rows in cands.index:
-                use = cands.loc[rows].dropna()
-                temp = []
-                for cols in use.index:
-                    if i in use[cols]:
-                        temp.append(cols)
-                wing.append(temp)
-            wings.append(wing)      
-        
-        #loop through the candidates and eliminate
-        for wing in range(len(wings)):
-            # print(wings[wing])
-            for i in range(9):
-                for j in range(i+1,9):
-                    if (len(wings[wing][i]) == 2) & (len(wings[wing][j]) == 2):
-                        # print(f"pair_r{i}c{j}")
-                        if wings[wing][i] == wings[wing][j]:
-                            #remove candidates in the columns
-                            for rem in wings[wing][i]:
-                                use = cands[rem].dropna()
-                                for ix in use.index:
-                                    if not((ix == i) | (ix == j)):
-                                        temp = use[ix].tolist()
-                                        try:
-                                            temp.remove(wing+1)
-                                            print(f"R{ix}C{rem}     X-Wing, removed {wing+1} from {rowcol}")
-                                            ischanged = 1
-                                        except:
-                                            pass
-                                        use[ix] = np.array(temp)
-                                cands[rem] = use
-    cands = cands.T
-    if ischanged:
-        board,cands = solver(board,cands)           
-    return board,cands  
+        solver(board,cands)
 
 #%% POINTING PAIRS
 def pointing_pairs(board,cands):
@@ -757,9 +710,9 @@ def pointing_pairs(board,cands):
                     pass
                     
     if ischanged:
-        board,cands = solver(board,cands)  
+        solver(board,cands)  
 
-    return board,cands
+    
 
 #%% BOX/LINE REDUCTION
 
@@ -826,21 +779,204 @@ def box_line(board,cands):
         
         
         if ischanged:
-            board,cands = solver(board,cands)  
+            solver(board,cands)  
+#%% X-WING  
+def x_wing(board,cands):
+    #check xwings for both rows and columns
+    for rowcol in ["rows","cols"]:
+        if rowcol == "cols":
+            cands = cands.T
+        ischanged = 0
+        #construct candidate table
+        wings = []
+        for i in range(1,10):
+            wing = []
+            for rows in cands.index:
+                use = cands.loc[rows].dropna()
+                temp = []
+                for cols in use.index:
+                    if i in use[cols]:
+                        temp.append(cols)
+                wing.append(temp)
+            wings.append(wing)      
+        
+        #loop through the candidates and eliminate
+        for wing in range(len(wings)):
+            # print(wings[wing])
+            for i in range(9):
+                for j in range(i+1,9):
+                    if (len(wings[wing][i]) == 2) & (len(wings[wing][j]) == 2):
+                        # print(f"pair_r{i}c{j}")
+                        if wings[wing][i] == wings[wing][j]:
+                            #remove candidates in the columns
+                            for rem in wings[wing][i]:
+                                use = cands[rem].dropna()
+                                for ix in use.index:
+                                    if not((ix == i) | (ix == j)):
+                                        temp = use[ix].tolist()
+                                        try:
+                                            temp.remove(wing+1)
+                                            print(f"R{ix}C{rem}     X-Wing, removed {wing+1} from {rowcol}")
+                                            ischanged = 1
+                                        except:
+                                            pass
+                                        use[ix] = np.array(temp)
+                                cands[rem] = use
+    cands = cands.T
+    if ischanged:
+        solver(board,cands)           
+
+#%% Y-WING
+#find if there is a key cell in the "rectangular formation y-wing"
+def find_rect_key(comb):
+    #check if comb[0] is the key
+    if (comb[0][0] == comb[1][0] and comb[0][1] == comb[2][1]) or (comb[0][0] == comb[2][0] and comb[0][1] == comb[1][1]):
+        key = comb[0]
+    #check if comb[1] is the key
+    elif (comb[1][0] == comb[0][0] and comb[1][1] == comb[2][1]) or (comb[1][0] == comb[2][0] and comb[1][1] == comb[0][1]):
+        key = comb[1]
+    #check if comb[2] is the key
+    elif (comb[2][0] == comb[0][0] and comb[2][1] == comb[1][1]) or (comb[2][0] == comb[1][0] and comb[2][1] == comb[0][1]):
+        key = comb[2]
+    else:
+        key = False
+        
+    return key
+#find if two cells are in the same box
+def is_same_box(a,b):
+    box = False
+    if square_pos.iloc[a[0],a[1]] == square_pos.iloc[b[0],b[1]]:
+        # box = square_pos.iloc[a[0],a[1]]
+        box = True
+    return box
+
+#find if there is a key cell in "not rectangular formation y-wing"
+def find_key(comb):
+    #check if comb[0] is the key
+    if (is_same_box(comb[0], comb[1]) and (comb[0][0]==comb[2][0] or comb[0][1]==comb[2][1])) or\
+        (is_same_box(comb[0], comb[2]) and (comb[0][0]==comb[1][0] or comb[0][1]==comb[1][1])):
+            key = comb[0]
+    #check if comb[1] is the key
+    elif (is_same_box(comb[1], comb[0]) and (comb[1][0]==comb[2][0] or comb[1][1]==comb[2][1])) or\
+        (is_same_box(comb[1], comb[2]) and (comb[1][0]==comb[0][0] or comb[1][1]==comb[0][1])):
+            key = comb[1]      
+    #check if comb[2] is the key
+    elif (is_same_box(comb[2], comb[0]) and (comb[2][0]==comb[1][0] or comb[2][1]==comb[1][1])) or\
+        (is_same_box(comb[2], comb[1]) and (comb[2][0]==comb[0][0] or comb[2][1]==comb[0][1])):
+            key = comb[2]   
+    else:
+        key = False
+        
+    return key
+
+def y_wing_cand_eliminate(key,comb,cands,rem,isrect):
+    comb = list(comb)
+    comb.remove(key)
+    ischanged = 0
+    
+    if isrect:
+        for inx in [(comb[0][0],comb[1][1]),(comb[1][0],comb[0][1])]:
+            if inx != key and board.iloc[inx] == ".":
+                temp = cands.iloc[inx].tolist()
+                try:
+                    temp.remove(rem)
+                    cands.iloc[inx] = np.array(temp)
+                    print(f"R{inx[0]}C{inx[1]}     Y-Wing, removed {rem}")
+                    ischanged = 1
+                except:
+                    pass 
+    else:
+        #loop box indexes one by one
+        for wing in comb:
+            wing2 = comb[0] if comb[0]!=wing else comb[1]
+            inx_wing = list(square_pos[square_pos == square_pos.iloc[wing]].stack().index)
+            inx_wing.remove(wing)
+            try:
+                inx_wing.remove(key)
+            except:
+                pass
+            
+            for inx in inx_wing:
+                if board.iloc[inx] == "." and (inx[0]==wing2[0] or inx[1]==wing2[1]):
+                    temp = cands.iloc[inx].tolist()
+                    try:
+                        temp.remove(rem)
+                        cands.iloc[inx] = np.array(temp)
+                        print(f"R{inx[0]}C{inx[1]}     Y-Wing, removed {rem}")
+                        ischanged = 1
+                    except:
+                        pass  
+    return ischanged
+
+def y_wing(board,cands):
+    ischanged = 0
+    #determine the number of candidates for each cell
+    lenx = cands.apply(lambda x: x.str.len())
+    #find the location of bivalue cells
+    inxtwos = lenx[lenx == 2].stack().index
+    
+    #go through triple-combinations of bivalue cells
+    for comb in itertools.combinations(inxtwos, 3):
+        temp = []
+        
+        for co in comb:
+            temp.extend(cands.iloc[co])
+        valco = pd.Series(temp).value_counts()
+        
+        #check if the combination construct a AB,BC,AC formation
+        if len(valco) == 3:
+            if len(valco.unique()) == 1:
+                #make sure that only 2 of the 3 cells are in the same column or row
+                row = pd.Series(list(map(lambda x: x[0],comb)))
+                col = pd.Series(list(map(lambda x: x[1],comb)))
+                if 2 in row.value_counts().values or \
+                    2 in col.value_counts().values:
+                    # make sure that not all of them in the same box
+                    box = list(map(lambda x: square_pos.iloc[x],comb))
+                    if np.diff(box).any():
+                        
+                        #eliminate the ones which all corners are in different boxes and does not form a rectangular formation
+                        rect_key = find_rect_key(comb)
+                        if not (len(pd.Series(box).unique()) == 3 and rect_key == False):
+                            key = find_key(comb)
+                            
+                            if rect_key:
+                                for ix in list(valco.index):
+                                    if not ix in cands.iloc[rect_key]:
+                                        rem = ix
+                                # print(f"values = {list(valco.index)}, inx = {comb}, rect_key_cell = {rect_key}, rem = {rem} Rectangular")
+                                #remove value from wing boxes
+                                ischanged = y_wing_cand_eliminate(rect_key,comb,cands,rem,1)
+                                
+                            if key:
+                                #determine the value to be removed from candidates
+                                for ix in list(valco.index):
+                                    if not ix in cands.iloc[key]:
+                                        rem = ix
+                                
+                                #determine the key cell
+                                # print(f"values = {list(valco.index)}, inx = {comb}, key_cell = {key}, rem = {rem}")
+                                
+                                #remove value from wing boxes
+                                ischanged = y_wing_cand_eliminate(key,comb,cands,rem,0)
+    if ischanged:
+        solver(board,cands)         
+                                        
 
 #%% SOLVER FUNCTION
 def solver(board,cands):
-    board,cands = single_cand(board,cands)
-    board,cands = hidden_singles(board,cands)
-    board,cands = naked_pairs(board,cands)
-    board,cands = hidden_pairs(board,cands)
-    board,cands = naked_triples(board,cands)
-    board,cands = hidden_triples(board,cands)
-    board,cands = pointing_pairs(board,cands)
+    single_cand(board,cands)
+    hidden_singles(board,cands)
+    naked_pairs(board,cands)
+    hidden_pairs(board,cands)
+    naked_triples(board,cands)
+    hidden_triples(board,cands)
+    pointing_pairs(board,cands)
     box_line(board,cands)
-    board,cands = x_wing(board,cands)
+    x_wing(board,cands)
+    y_wing(board,cands)
     
-    return board,cands
+    
 
 #%% RUN THE SOLVER
     
@@ -863,20 +999,22 @@ def solver(board,cands):
 # grid = np.array2string(board.replace(".",0).values.flatten()).translate({ord(i): None for i in "[]\n "})
 
 # grids from Andrew Stuart's website
-#####SOLVED
+#(SOLVED)
 # grid = "000004028406000005100030600000301000087000140000709000002010003900000507670400000"
-####SOLVED #(moderate in Andrew Stuart website) needs naked triple
+#(SOLVED) #(moderate in Andrew Stuart website) needs naked triple
 # grid = "720096003000205000080004020000000060106503807040000000030800090000702000200430018"
-# # board for naked pairs (tough in Andrew Stuart website) needs Y-wing
+# (SOLVED) board for naked pairs (tough in Andrew Stuart website) needs Y-wing
 # grid = "309000400200709000087000000750060230600904008028050041000000590000106007006000104"
-# #board for POINTING PAIRS (diabolical in Andrew Stuart website), needs simple colouring
+# #board for pointing pairs (diabolical in Andrew Stuart website), needs simple colouring
 # grid = "000704005020010070000080002090006250600070008053200010400090000030060090200407000"
-# # board for xwing example, needs y-wing
+# # board for xwing example, y-wing, simple colouring needed
 # grid = "093004560060003140004608309981345000347286951652070483406002890000400010029800034"
-#board for hidden triple (SOLVED)
+# (SOLVED) board for hidden triple 
 # grid="300000000970010000600583000200000900500621003008000005000435002000090056000000001"
 #board for box/line reduction (simple coloring needed)
 # grid="000921003009000060000000500080403006007000800500700040003000000020000700800195000"
+# (SOLVED) board for Y-wing (multiply y-wings at different locations)
+# grid = "900240000050690231020050090090700320002935607070002900069020073510079062207086009"
 
 
 # # grids from github
@@ -891,7 +1029,7 @@ def solver(board,cands):
 # grid = "020810740700003100090002805009040087400208003160030200302700060005600008076051090"
 # # Grid 06 (SOLVED)
 # grid = "840000000000000000000905001200380040000000005000000000300000820009501000000700000"
-# Grid 07 # (Y Wing needed)
+# Grid 07 # (SOLVED) (Y Wing needed)
 # grid = "007000400060070030090203000005047609000000000908130200000705080070020090001000500"
 # Grid 26 (SOLVED)
 # grid = "500400060009000800640020000000001008208000501700500000000090084003000600060003002"
@@ -944,7 +1082,8 @@ square_pos = pd.DataFrame([ [1,1,1,2,2,2,3,3,3],
 t1 = time.time()
 print_board(board)
 cands = candidates(board)
-board,cands = solver(board,cands)
+solver(board,cands)
+# y_wing(board,cands)
 print(f"Solving took {time.time()-t1} seconds")
 board.index = np.arange(1,10)
 board.columns = np.arange(1,10)
