@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Dec 23 00:15:44 2019
-SUDOKU SOLVER V14
-- simple colouring added
-- user enters sudoku in the console
+SUDOKU SOLVER V15
+- simple colouring enhancements in the algorithm
+- terminates when the board is complete (faster)
+- candidate updates function is enhanced
 @author: omerzulal
 """
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set_style("darkgrid")
 import warnings
 warnings.filterwarnings("ignore")
 import time
@@ -121,67 +118,22 @@ def candidates(board):
 
     return cands
 
-### Original version
-# def candidates(board):
-#     cands = pd.DataFrame(np.full((9,9),np.nan))
-#     for row in range(9):
-#         for col in range(9):
-#             temp = []
-#             if board.iloc[row,col] == ".":
-#                 temp.extend(board.iloc[row,:])
-#                 temp.extend(board.iloc[:,col])
-#                 temp.extend(board.loc[board.index[row]][board.columns[col]].values.flatten())
-#                 temp = pd.Series(temp)
-#                 drops = temp[temp!="."].unique()
-#                 cand = pd.Series(np.arange(1,10),index=np.arange(1,10)).drop(drops).values.astype("O")
-#                 cands[col][row] = cand
-#     return cands
-
 #%% UPDATE CANDIDATES
 def candidates_update(cands,row,col,val):
-    cands.loc[row][col] = np.nan
-    # val = int(val)
+    #remove the value from candidate matrix first
+    cands.iloc[row,col] = np.nan
     
-    #remove from rows
-    temp1 = cands.loc[row].dropna().apply(lambda x: val in x)
-    inx = temp1.index[temp1 == True]
-    if len(inx):
-        for i in inx:
-            try:
-                temp = cands.loc[row][i].tolist()
-            except:
-                temp = cands.loc[row][i]
-            temp.remove(val)
-            cands.loc[row][i] = np.array(temp)
+    #locate the cells seen by the key cell
+    seen_cells = cells_seen((row,col))
     
-    #remove from columns
-    temp1 = cands[col].dropna().apply(lambda x: val in x)
-    inx = temp1.index[temp1 == True]
-    if len(inx):
-        for i in inx:
-            try:
-                temp = cands[col][i].tolist()
-            except:
-                temp = cands[col][i]
-            
-            temp.remove(val)
-            cands[col][i] = np.array(temp)
+    #remove the value from the seen cells
+    for i in seen_cells:
+        try:
+            if val in cands.iloc[i]:
+                cands.loc[i[0]][i[1]] = np.delete(cands.iloc[i],np.where(cands.iloc[i]==val))
+        except:
+            pass
     
-    #remove from squares
-    temp = pd.Series([[0,1,2],[3,4,5],[6,7,8]])
-    rowx = temp[[row in i for i in temp]].tolist()[0]
-    colx = temp[[col in i for i in temp]].tolist()[0]
-    a = cands.iloc[rowx,colx]
-    
-    for ii in a.index:
-        for jj in a.columns:
-            try:
-                temp1 = a.loc[ii][jj].tolist()
-                temp1.remove(val)
-                a.loc[ii][jj] = np.array(temp1)
-            except:
-                pass
-    cands.iloc[rowx,colx] = np.array(a)
     return cands
 
 #%% SINGLE CANDIDATES
@@ -270,7 +222,6 @@ def hidden_singles(board,cands):
                             except:
                                 print("except")
     if is_changed:
-        # sys.exit(0)
         solver(board,cands)                       
     
 
@@ -508,7 +459,7 @@ def naked_pairs(board,cands):
                                 for l in pairs[i]:
                                     try:
                                         temp.remove(l)
-                                        print(f"R{row}C{k}     Naked Pair (row), {l} removed {pairs[i]}")
+                                        print(f"R{row}C{k}     Naked Pair (row) {pairs[i]}, {l} removed")
                                         ischanged = 1
                                     except:
                                         pass
@@ -536,7 +487,7 @@ def naked_pairs(board,cands):
                                 for l in pairs[i]:
                                     try:
                                         temp.remove(l)
-                                        print(f"R{k}C{col}     Naked Pair (col), {l} removed {pairs[i]}")
+                                        print(f"R{k}C{col}     Naked Pair (col) {pairs[i]}, {l} removed")
                                         ischanged = 1
                                     except:
                                         pass
@@ -574,7 +525,7 @@ def naked_pairs(board,cands):
                                                     for l in pairs[pair1]:
                                                         try:
                                                             temp.remove(l)
-                                                            print(f"R{ii}C{jj}     Naked Pair (square), {l} removed {pairs[pair1]}")
+                                                            print(f"R{ii}C{jj}     Naked Pair (square) {pairs[pair1]}, {l} removed")
                                                             ischanged = 1
                                                         except:
                                                             pass
@@ -683,7 +634,7 @@ def pointing_pairs(board,cands):
             
             valco = pd.Series(temp).value_counts()
             # try:
-            pair_vals = valco.index[valco == 2]
+            pair_vals = valco.index[(valco == 2) | (valco == 3)]
             
             for pair_val in pair_vals:
                 pointrows, pointcols = [],[]
@@ -698,7 +649,7 @@ def pointing_pairs(board,cands):
                         
                 #pairs point in the column direction
                 try:
-                    if not np.diff(pointcols)[0]:
+                    if not any(np.diff(pointcols)):
                         change_col = cands[pointcols[0]].dropna().drop(pointrows)
                         for rows in change_col.index:
                             temp = change_col[rows].tolist()
@@ -714,7 +665,7 @@ def pointing_pairs(board,cands):
                     
                 #pairs point in the row direction
                 try:
-                    if not np.diff(pointrows)[0]:
+                    if not any(np.diff(pointrows)):
                         change_col = cands.loc[pointrows[0]].dropna().drop(pointcols)
                         for cols in change_col.index:
                             temp = change_col[cols].tolist()
@@ -797,8 +748,9 @@ def box_line(board,cands):
                                     pass
         
         
-        if ischanged:
-            solver(board,cands)  
+    if ischanged:
+        solver(board,cands)  
+            
 #%% X-WING  
 def x_wing(board,cands):
     #check xwings for both rows and columns
@@ -938,7 +890,6 @@ def y_wing(board,cands):
     #go through triple-combinations of bivalue cells
     for comb in itertools.combinations(inxtwos, 3):
         temp = []
-        
         for co in comb:
             temp.extend(cands.iloc[co])
         valco = pd.Series(temp).value_counts()
@@ -983,7 +934,6 @@ def y_wing(board,cands):
         solver(board,cands)         
 
 #%% Simple Colouring (Singles Chains)
-
 # finds and returns conjugate pairs (strong links)
 def conjugate_pairs():
     # find strong links for each value
@@ -1060,136 +1010,170 @@ def conjugate_pairs():
         
     return strlinx_rows,strlinx_cols,strlinx_boxs
 
-# based on the conjugate pair information, it does the colouring of the cells (True/False)
-def colour_cell(pairs,search,match_matrix):
-    global groups
+#auxiliary function used by the recursive function
+def colour_cell(boxrowcol,i,search,match_matrix,val,sl_uniq,strlinx_rows,strlinx_cols,strlinx_boxs):
+    i = pd.Series(i)
+    inx = i.index[i == search]
     
-    colours = pd.Series(["B","R"])
-
-    pairs = pd.Series(pairs)
-    pairinx = pairs.index[pairs == search]
     try:
-        inx_to_change = pairs[abs(pairinx[0]-1)]
-        if pd.isnull(match_matrix.iloc[inx_to_change]):
-            #initiates a new link group with colour "B"
-            if pd.isnull(match_matrix.iloc[search]):
-                group = groups.pop()
-                colour = "B"+str(group)
-                match_matrix.iloc[search] = colour
-                colour = "R"+str(group)
-                match_matrix.iloc[inx_to_change] = colour
-            else:
-                group = match_matrix.iloc[search][1]
-                colour = colours[abs(colours.index[match_matrix.iloc[search][0] == colours][0]-1)]+str(group)
-                match_matrix.iloc[inx_to_change] = colour
-        else: #means groups will merge
-            org_group = match_matrix.iloc[search]
-            opp_group = match_matrix.iloc[inx_to_change]
+        pair = i[abs(inx-1)].tolist()[0]
+        if len(pair) and pd.isnull(match_matrix.iloc[pair]):
+            # print(f"{boxrowcol}: Connection from {search} to {pair} for {val+1}")
             
-            if opp_group[1] != org_group[1]:
-                colour = colours[abs(colours.index[match_matrix.iloc[search][0] == colours][0]-1)]+str(org_group[1])
-                match_matrix.iloc[inx_to_change] = colour
-
-            # print(f"Search:{search}, val: {match_matrix.iloc[search]}, change inx: {inx_to_change}, val: {colour}, group: {group}")
+            #colour conjugate pairs with the same group but different colour
+            group = match_matrix.iloc[search][1]
+            colour = colours[abs(colours.index[match_matrix.iloc[search][0] == colours][0]-1)]+str(group)
+            match_matrix.iloc[pair] = colour
+            
+            match_matrix = simple_colouring(val,pair,strlinx_rows,strlinx_cols,strlinx_boxs,sl_uniq,match_matrix)
     except:
         pass
     return match_matrix
+    
+#the recursive function searches for the cell
+def simple_colouring(val,search,strlinx_rows,strlinx_cols,strlinx_boxs,sl_uniq,match_matrix):
+    #first start searching it in the boxes
+    for i in strlinx_boxs[val]:
+        match_matrix = colour_cell("box",i,search,match_matrix,val,sl_uniq,strlinx_rows,strlinx_cols,strlinx_boxs)
+    
+    #then rows
+    for i in strlinx_rows[val]:
+        match_matrix = colour_cell("row",i,search,match_matrix,val,sl_uniq,strlinx_rows,strlinx_cols,strlinx_boxs)
+    
+    #then cols
+    for i in strlinx_cols[val]:
+        match_matrix = colour_cell("col",i,search,match_matrix,val,sl_uniq,strlinx_rows,strlinx_cols,strlinx_boxs)
+    
+    return match_matrix
 
-# does simple colouring (type 1)
-def simple_colouring(val,match_matrix):
+def cells_seen(inx):
+    cells = []
+    #box
+    cells.extend(square_pos[square_pos == square_pos.iloc[inx]].stack().index)
+    #rows
+    cells.extend(square_pos.iloc[[inx[0]],:].stack().index)
+    #cols
+    cells.extend(square_pos.iloc[:,[inx[1]]].stack().index)
+    cells = pd.Series(cells).unique()
+    return cells
     
-    #find conjugate pairs
-    strlinx_rows,strlinx_cols,strlinx_boxs = conjugate_pairs()
-    
-    #find unique strong links
-    sl = strlinx_rows[val].copy()
-    sl.extend(strlinx_cols[val])
-    sl.extend(strlinx_boxs[val])
-    temp = []
-    for i in sl:
-        temp.extend(i)
-    sl_uniq = pd.Series(temp).unique()
-    
-    #loop cells which have strong links
-    for search in sl_uniq: 
-        #boxes
-        for pairs in strlinx_boxs[val]:
-            match_matrix = colour_cell(pairs,search,match_matrix)
-        #rows
-        for pairs in strlinx_rows[val]:
-            match_matrix = colour_cell(pairs,search,match_matrix)
-        #cols
-        for pairs in strlinx_cols[val]:
-            match_matrix = colour_cell(pairs,search,match_matrix)   
-    return sl_uniq,match_matrix
 
-def single_chain_eliminate(sl_uniq,match_matrix,rem):
+def singles_chains_eliminate(sl_uniq,match_matrix,rem):
     ischanged = 0
-    for i,h in enumerate(sl_uniq):
-        for j in range(i,len(sl_uniq)):
-            inxi = sl_uniq[i]
-            inxj = sl_uniq[j]
-            ci = match_matrix.iloc[inxi]
-            cj = match_matrix.iloc[inxj]
+    for rows in cands.index:
+        for cols in cands.columns:
+            use = cands.iloc[rows,cols]
             
-            if ci[1] == cj[1] and ci[0] != cj[0] and (sl_uniq[i][0]!=sl_uniq[j][0] and sl_uniq[i][1]!=sl_uniq[j][1]):
-                inti = (inxi[0],inxj[1])
-                intj = (inxj[0],inxi[1])
-                
-                #remove from intersection 1 (inti)
-                try:
-                    temp = cands.iloc[inti].tolist()
-                    temp.remove(rem+1)
-                    ischanged = 1
-                    print(f"R{inti[0]}C{inti[1]}     Single-Chains, removed {rem+1}")
-                    cands.iloc[inti] = np.array(temp)
-                except:
-                    pass
-                #remove from intersection 2 (intj)
-                try:
-                    temp = cands.iloc[intj].tolist()
-                    temp.remove(rem+1)
-                    ischanged = 1
-                    print(f"R{intj[0]}C{intj[1]}     Single-Chains, removed {rem+1}")
-                    cands.iloc[intj] = np.array(temp)
-                except:
-                    pass
-    return ischanged
-
-
-groups = 1000*list(range(1,10)) #all group names possible
+            try:
+                chk = not pd.isnull(use).all()
+            except:
+                chk = False
+            
+            #locate candidate cells for elimination
+            if chk:
+                if rem+1 in use:
+                # if pd.isnull(match_matrix.iloc[rows,cols]) and rem+1 in use:
+                    #locate all seen cells
+                    seen_cells = cells_seen((rows,cols))
+                    #find intersection between seen cells and the conjugate pairs 
+                    inters = list(set(seen_cells) & set(sl_uniq))
+                    
+                    #remove the cell of interest from the intersection cells, if any
+                    try:
+                        inters.remove((rows,cols))
+                    except:
+                        pass
+                    
+                    #if these cells intersect
+                    if len(inters):
+                        #obtain colours of the seen conjugate paris
+                        inter_colours = pd.Series([match_matrix.iloc[i] for i in inters]).unique()
+                        # print(f"val:{rem+1}, cell:{(rows,cols)}, intersection cells: {inters}, intersection colours: {inter_colours}")
+                        
+                        if len(inter_colours) == 2:
+                            if inter_colours[0][1] == inter_colours[1][1] and \
+                                inter_colours[0][0] != inter_colours[1][0]:
+                                    temp = use.tolist()
+                                    try:
+                                        temp.remove(rem+1)
+                                        cands.iloc[rows,cols] = np.array(temp)
+                                        print(f"R{rows}C{cols}     Singles-Chains, removed {rem+1}")
+                                        ischanged = 1
+                                    except:
+                                        pass 
+                        elif len(inter_colours) >= 3:
+                            # print("Inter Len >= 3")
+                            for combs in itertools.combinations(inter_colours,2):
+                                # print(combs)
+                                if combs[0][1] == combs[1][1] and combs[0][0] != combs[1][0]:
+                                    temp = use.tolist()
+                                    try:
+                                        temp.remove(rem+1)
+                                        cands.iloc[rows,cols] = np.array(temp)
+                                        print(f"R{rows}C{cols}     Singles-Chains, removed {rem+1}")
+                                        ischanged = 1
+                                    except:
+                                        pass 
+                            
+    return ischanged                       
 
 #call single chain functions
-def single_chain(board,cands):
+def singles_chains(board,cands):
     ischanged = 0
+    
+    #find unique strong links for a value
+    strlinx_rows,strlinx_cols,strlinx_boxs=conjugate_pairs() 
 
     #select the value before finding conjugate pairs
     for val in range(9):
+        sl = strlinx_rows[val].copy()
+        sl.extend(strlinx_cols[val])
+        sl.extend(strlinx_boxs[val])
+        temp = []
+        for i in sl:
+            temp.extend(i)
+        sl_uniq = pd.Series(temp).unique()
         #construct empty matrix for conjugate pairs
         match_matrix = pd.DataFrame(np.full((9,9),np.nan))
         
-        # print(f"val={val+1}")
-        #call simple colouring function
-        sl_uniq,match_matrix = simple_colouring(val,match_matrix)
-        
-        #call single chains elimination function
-        ischanged = single_chain_eliminate(sl_uniq,match_matrix,val)
-    if ischanged:
-        solver(board,cands) 
+        #start cell
+        for group,init_cell in enumerate(sl_uniq):
+            # print(f"Start Cell: {init_cell}")
+            
+            if pd.isnull(match_matrix.iloc[init_cell]):
+                match_matrix.iloc[init_cell] = colours[0]+str(group)
+            
+            #call recursive function
+            match_matrix = simple_colouring(val,init_cell,strlinx_rows,strlinx_cols,strlinx_boxs,sl_uniq,match_matrix)   
 
+        #call single chains elimination function
+        ischanged = singles_chains_eliminate(sl_uniq,match_matrix,val)
+        if ischanged:
+            # print("changed")
+            solver(board,cands)
+     
+#colours for the simple colouring strategy
+colours = pd.Series(["B","R"]) 
 #%% SOLVER FUNCTION
 def solver(board,cands):
-    single_cand(board,cands)
-    hidden_singles(board,cands)
-    naked_pairs(board,cands)
-    hidden_pairs(board,cands)
-    naked_triples(board,cands)
-    hidden_triples(board,cands)
-    pointing_pairs(board,cands)
-    box_line(board,cands)
-    x_wing(board,cands)
-    y_wing(board,cands)
-    single_chain(board,cands)
+    if (board==".").any().any():
+        single_cand(board,cands)
+        hidden_singles(board,cands)
+        naked_pairs(board,cands)
+        hidden_pairs(board,cands)
+        naked_triples(board,cands)
+        hidden_triples(board,cands)
+        pointing_pairs(board,cands)
+        box_line(board,cands)
+        x_wing(board,cands)
+        y_wing(board,cands)
+        singles_chains(board,cands)
+    else:
+        print("COMPLETE!!!!!")
+        # break
+        sys.exit(0)
+    
+    
     
 
 #%% Alternative grids from the internet
@@ -1197,51 +1181,66 @@ def solver(board,cands):
 # grids from Andrew Stuart's website
 #(SOLVED)
 # grid = "000004028406000005100030600000301000087000140000709000002010003900000507670400000"
-#(SOLVED) moderate in Andrew Stuart website, needs naked triple
+#(SOLVED) moderate in Andrew Stuart website, naked triple
 # grid = "720096003000205000080004020000000060106503807040000000030800090000702000200430018"
-# (SOLVED) board for naked pairs (tough in Andrew Stuart website) needs Y-wing
+# (SOLVED) board for naked pairs, Y-wing
 # grid = "309000400200709000087000000750060230600904008028050041000000590000106007006000104"
-# board for pointing pairs (diabolical in Andrew Stuart website), needs simple colouring
+# board for pointing pairs, simple colouring, ***NEEDS*** XYZ wing
 # grid = "000704005020010070000080002090006250600070008053200010400090000030060090200407000"
-# (SOLVED) board for xwing example, y-wing, simple colouring needed
+# (SOLVED) board for xwing example, y-wing, simple colouring
 # grid = "093004560060003140004608309981345000347286951652070483406002890000400010029800034"
 # (SOLVED) board for hidden triple 
 # grid="300000000970010000600583000200000900500621003008000005000435002000090056000000001"
-# (SOLVED) board for box/line reduction (simple coloring needed)
+# (SOLVED) board for box/line reduction, simple coloring
 # grid="000921003009000060000000500080403006007000800500700040003000000020000700800195000"
 # (SOLVED) board for Y-wing (multiply y-wings at different locations)
 # grid = "900240000050690231020050090090700320002935607070002900069020073510079062207086009"
+# (SOLVED) simple coloring
+# grid = "007083600039706800826419753640190387080367000073048060390870026764900138208630970"
+# simple coloring, ***NEEDS*** x-cycles
+# grid = "200041006400602010016090004300129640142060590069504001584216379920408165601900482"
+# (SOLVED) simple coloring
+# grid = "062900000004308000709000400600801000003000200000207003001000904000709300000004120"
+# (SOLVED) simple coloring
+# grid = "000000070000090810500203004800020000045000720000000003400308006072010000030000000"
+# (SOLVED) simple coloring
+# grid = "090200350012003000300008000000017000630000089000930000000700002000300190078009030"
+# (SOLVED) simple coloring
+grid = "400800003006010409000005000010060092000301000640050080000600000907080100800009004"
+# sadfasdf
+# grid = "016007803090800000870001260048000300650009082039000650060900020080002936924600510"
+
 
 # # grids from github
 # # https://github.com/sok63/sudoku-1/blob/master/sample/p096_sudoku.txt
-# Grid 01 (Simple colouring needed)
-grid = "200000006000602000010090004300009600040000090009500001500010370000408000600000002"
+# Grid 01 Simple colouring, ***NEEDS*** x-cycles
+# grid = "200000006000602000010090004300009600040000090009500001500010370000408000600000002"
 # Grid 02 (3D medusa needed)
 # grid = "000050000300284000010000408086003200400000009005700140507000030000637001000020000"
-# Grid 03 (SOLVED)
+# (SOLVED) Grid 03 
 # grid = "000000907000420180000705026100904000050000040000507009920108000034059000507000000"
-# # Grid 05 (SOLVED)
+# (SOLVED) Grid 05
 # grid = "020810740700003100090002805009040087400208003160030200302700060005600008076051090"
-# # Grid 06 (SOLVED)
+# (SOLVED) Grid 06 
 # grid = "840000000000000000000905001200380040000000005000000000300000820009501000000700000"
-# Grid 07 # (SOLVED) (Y Wing needed)
+# (SOLVED) Grid 07, Y Wing
 # grid = "007000400060070030090203000005047609000000000908130200000705080070020090001000500"
-# Grid 26 (SOLVED)
+# (SOLVED) Grid 26 
 # grid = "500400060009000800640020000000001008208000501700500000000090084003000600060003002"
-# Grid 48 (SOLVED)
+# (SOLVED) Grid 48 
 # grid = "001007090590080001030000080000005800050060020004100000080000030100020079020700400"
 
-#cracking the cryptic LGFL83r67M (hidden quads needed)
+#cracking the cryptic LGFL83r67M X-wing, ***NEEDS*** hidden quads
 # grid = "000000010210003480039800200060304900000000000001607040008002170026700098090000000"
-#cracking the cryptic mgp6LprDM8, simple colouring, swordfish needed
+#cracking the cryptic mgp6LprDM8, simple colouring, ***NEEDS*** swordfish
 # grid = "800000100010790560007108040570020400008010795103050080701003006000000010002001900"
-#cracking the cryptic 3gLbRPQ42d (SOLVED)
+# (SOLVED) cracking the cryptic 3gLbRPQ42d 
 # grid = "000000700000001080300020004090002060005000800080700050200070003060500000003000000"
-#cracking the cryptic JDFGD8p2m3 (diabolic strategies needed)
+#cracking the cryptic JDFGD8p2m3 ***NEEDS***  diabolic strategies
 # grid = "800000300040001000200470000400000000010002070003090005000685000008000120000009003"   
-#cracking the cryptic RRf6bgb9GG (SOLVED)
+# (SOLVED) cracking the cryptic RRf6bgb9GG
 # grid = "609102080000000400502000000000020304100005000020000506000801000000000009805907040"   
-#cracking the cryptic BHBjPFJJP4 (Need swordfish)
+#cracking the cryptic BHBjPFJJP4 ***NEEDS*** swordfish
 # grid = "040300600001002090000000000000000000030600900007001020060400300700000008002007010"   
 
 
@@ -1298,7 +1297,7 @@ else:
    
 #check validity after solving it
 if check_valid():
-    print(f"Solving took {time.time()-t1} seconds")
+    print(f"Solving took {round(time.time()-t1,2)} seconds")
     board.index = np.arange(1,10)
     board.columns = np.arange(1,10)
     print_board(board)
