@@ -21,11 +21,11 @@ grid = "000000700000001080300020004090002060005000800080700050200070003060500000
 
 Scrpit converts the string into 9x9 dataframe:
 
-![plot2](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/board_initial.JPG)
+![plot2](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/images/board_initial.JPG)
 
 Candidates for cells are kept in a separate dataframe:
 
-![plot4](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/candidates.JPG)
+![plot4](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/images/candidates.JPG)
 
 Strategies are implemented in the listed order which is given above. Any changes in the board or candidates results in recursively calling the solver function again. Changes in the board are logged and displayed in Row&Column pair notation:
 
@@ -122,4 +122,4 @@ R6C5=1 : Single Candidate
 
 After solving the board, it shows the final look of it and how much time it took:
 
-![plot3](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/board_final.JPG)
+![plot3](https://github.com/omerfarukeker/Sudoku-Solver/blob/master/images/board_final.JPG)
