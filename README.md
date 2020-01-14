@@ -2,11 +2,9 @@
 Solves the user entered Sudoku boards with commonly known strategies* which are:
 - Single candidates
 - Hidden singles
-- Naked pairs
-- Hidden pairs
-- Naked triples
-- Hidden triples
-- Pointing pairs
+- Naked pairs-triples-quads
+- Hidden pairs-triples-quads
+- Pointing pairs-triples
 - Box/Line reduction
 - X-wing
 - Y-wing
