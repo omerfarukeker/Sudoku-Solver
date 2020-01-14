@@ -4,6 +4,7 @@ Created on Fri Jan 10 10:12:25 2020
 
 @author: omer.eker
 """
+import numpy as np
 import pandas as pd
 from candidate_handler import candidates_update
 #interdependent modules, it has to be imported like below,otherwise it wont work
@@ -49,6 +50,7 @@ def pointing_pairs(board,cands,square_pos):
                                 cands.iloc[rows,pointcols[0]] = np.array(temp)
                                 print(f"R{rows}C{pointcols[0]}     Pointing Pairs (cols), {pair_val} removed")
                                 ischanged = 1
+                                # solver.solver(board,cands,square_pos)
                             except:
                                 pass
                 except:
@@ -65,6 +67,7 @@ def pointing_pairs(board,cands,square_pos):
                                 cands.iloc[pointrows[0],cols] = np.array(temp)
                                 print(f"R{pointrows[0]}C{cols}     Pointing Pairs (rows), {pair_val} removed")
                                 ischanged = 1
+                                # solver.solver(board,cands,square_pos)
                             except:
                                 pass
                 except:

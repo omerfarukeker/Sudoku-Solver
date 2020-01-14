@@ -15,12 +15,13 @@ import solver as solver
 def box_line(board,cands,square_pos):
     ischanged = 0
     
-    #rows
+    #check row by row
     for rows in range(9):
         use = cands.loc[rows].dropna()
         for val in range(1,10):
             inxs = use.apply(lambda x: val in x)
-            if len(inxs) == 0:
+            # if len(inxs) == 0:
+            if len(inxs) < 2:
                 break
             inxs = list(inxs.index[inxs])
             
@@ -41,6 +42,7 @@ def box_line(board,cands,square_pos):
                                 cands.iloc[ix] = np.array(temp)
                                 ischanged = 1
                                 print(f"R{ix[0]}C{ix[1]}     Box/Line (row) reduction value {val} removed")
+                                # solver.solver(board,cands,square_pos)
                             except:
                                 pass
         
@@ -49,7 +51,8 @@ def box_line(board,cands,square_pos):
             use = cands[cols].dropna()
             for val in range(1,10):
                 inxs = use.apply(lambda x: val in x)
-                if len(inxs) == 0:
+                # if len(inxs) == 0:
+                if len(inxs) < 2:
                     break
                 inxs = list(inxs.index[inxs])
                 
@@ -70,6 +73,7 @@ def box_line(board,cands,square_pos):
                                     cands.iloc[ix] = np.array(temp)
                                     ischanged = 1
                                     print(f"R{ix[0]}C{ix[1]}     Box/Line (col) reduction value {val} removed")
+                                    # solver.solver(board,cands,square_pos)
                                 except:
                                     pass
         

@@ -72,4 +72,3 @@ def hidden_singles(board,cands,square_pos):
                                 print("except")
     if is_changed:
         solver.solver(board,cands,square_pos)                       
-    

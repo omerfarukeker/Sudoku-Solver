@@ -6,6 +6,7 @@ Created on Fri Jan 10 09:31:40 2020
 """
 import pandas as pd
 
+#finds returns all seen cells given the location of the key cell
 def cells_seen(inx,square_pos):
     cells = []
     #box

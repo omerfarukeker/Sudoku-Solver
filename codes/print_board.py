@@ -5,7 +5,7 @@ Created on Fri Jan 10 09:13:56 2020
 @author: omer.eker
 """
 
-#print the board
+#prints the sudoku board
 def print_board(board):
     boardprint = board.copy()
     boardprint.columns = range(1,10)
