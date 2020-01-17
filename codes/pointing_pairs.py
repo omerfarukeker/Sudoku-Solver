@@ -47,7 +47,8 @@ def pointing_pairs(board,cands,square_pos):
                             temp = change_col[rows].tolist()
                             try:
                                 temp.remove(pair_val)
-                                cands.iloc[rows,pointcols[0]] = np.array(temp)
+                                # cands.iloc[rows,pointcols[0]] = np.array(temp)
+                                cands.set_value(rows,pointcols[0],np.array(temp))
                                 print(f"R{rows}C{pointcols[0]}     Pointing Pairs (cols), {pair_val} removed")
                                 ischanged = 1
                                 # solver.solver(board,cands,square_pos)
@@ -64,7 +65,8 @@ def pointing_pairs(board,cands,square_pos):
                             temp = change_col[cols].tolist()
                             try:
                                 temp.remove(pair_val)
-                                cands.iloc[pointrows[0],cols] = np.array(temp)
+                                # cands.iloc[pointrows[0],cols] = np.array(temp)
+                                cands.set_value(pointrows[0],cols,np.array(temp))
                                 print(f"R{pointrows[0]}C{cols}     Pointing Pairs (rows), {pair_val} removed")
                                 ischanged = 1
                                 # solver.solver(board,cands,square_pos)

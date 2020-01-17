@@ -163,7 +163,8 @@ def singles_chains_eliminate(sl_uniq,match_matrix,rem,cands,square_pos):
                                     temp = use.tolist()
                                     try:
                                         temp.remove(rem+1)
-                                        cands.iloc[rows,cols] = np.array(temp)
+                                        # cands.iloc[rows,cols] = np.array(temp)
+                                        cands.set_value(rows,cols,np.array(temp))
                                         print(f"R{rows}C{cols}     Singles-Chains, removed {rem+1}")
                                         ischanged = 1
                                     except:
@@ -176,7 +177,8 @@ def singles_chains_eliminate(sl_uniq,match_matrix,rem,cands,square_pos):
                                     temp = use.tolist()
                                     try:
                                         temp.remove(rem+1)
-                                        cands.iloc[rows,cols] = np.array(temp)
+                                        # cands.iloc[rows,cols] = np.array(temp)
+                                        cands.set_value(rows,cols,np.array(temp))
                                         print(f"R{rows}C{cols}     Singles-Chains, removed {rem+1}")
                                         ischanged = 1
                                     except:

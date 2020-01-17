@@ -96,8 +96,8 @@ def y_wing_cand_eliminate(key,comb,cands,rem,isrect,square_pos,board):
 
 def y_wing(board,cands,square_pos):
     ischanged = 0
-    #determine the number of candidates for each cell
-    lenx = cands.apply(lambda x: x.str.len())
+    #determine the number of candidates for each cell (if else statement is necessary otherwise str.len() gives error when all column or row values are Nan)
+    lenx = cands.apply(lambda x: x.str.len() if not x.isnull().all() else x)
     #find the location of bivalue cells
     inxtwos = lenx[lenx == 2].stack().index
     

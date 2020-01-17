@@ -122,7 +122,9 @@ def naked_remove(rowcolbox,group_no,naked_inxs,comb,cands,square_pos,no_of_naked
         #replace values in the cell with the intersection of combination and the cell
         if len(removed_vals):
             # cands.iloc[row,col] = np.array(list(set(comb)&set(cands.iloc[row,col])))
-            cands.iloc[row,col] = np.array(list(set(cands.iloc[row,col]).difference(set(comb))))
+            # cands.iloc[row,col] = np.array(list(set(cands.iloc[row,col]).difference(set(comb))))
+            # cands.loc[row][col] = np.array(list(set(cands.iloc[row,col]).difference(set(comb))))
+            cands.set_value(row,col,np.array(list(set(cands.iloc[row,col]).difference(set(comb)))))
             print(f"R{row:<1}C{col:<1}     Naked {pairtriplequad[no_of_nakeds]:>7}s ({rowcolbox:<3}), {str(removed_vals):<15} removed, {pairtriplequad[no_of_nakeds]:>7}s: {str(comb):>6}")
             ischanged = 1
             

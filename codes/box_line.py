@@ -39,7 +39,8 @@ def box_line(board,cands,square_pos):
                             try:
                                 temp = cands.iloc[ix].tolist()
                                 temp.remove(val)
-                                cands.iloc[ix] = np.array(temp)
+                                # cands.iloc[ix] = np.array(temp)
+                                cands.set_value(ix[0],ix[1],np.array(temp))
                                 ischanged = 1
                                 print(f"R{ix[0]}C{ix[1]}     Box/Line (row) reduction value {val} removed")
                                 # solver.solver(board,cands,square_pos)
@@ -70,7 +71,8 @@ def box_line(board,cands,square_pos):
                                 try:
                                     temp = cands.iloc[ix].tolist()
                                     temp.remove(val)
-                                    cands.iloc[ix] = np.array(temp)
+                                    # cands.iloc[ix] = np.array(temp)
+                                    cands.set_value(ix[0],ix[1],np.array(temp))
                                     ischanged = 1
                                     print(f"R{ix[0]}C{ix[1]}     Box/Line (col) reduction value {val} removed")
                                     # solver.solver(board,cands,square_pos)
