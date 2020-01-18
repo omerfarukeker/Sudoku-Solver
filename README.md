@@ -10,6 +10,7 @@ Solves the user entered Sudoku boards with commonly known strategies* which are:
 - Y-wing
 - Simple colouring (Singles' chains)
 - XYZ-wing
+- Swordfish
 
 _(*)Strategies are not complete yet, new ones will be added one by one once completed._
 
