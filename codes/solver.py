@@ -15,6 +15,7 @@ from x_wing import x_wing
 from y_wing import y_wing
 from singles_chains import singles_chains
 from xyz_wing import xyz_wing
+from swordfish import swordfish
 
 
 import sys
@@ -35,6 +36,7 @@ def solver(board,cands,square_pos):
         y_wing(board,cands,square_pos)
         singles_chains(board,cands,square_pos)
         xyz_wing(board,cands,square_pos)
+        swordfish(board,cands,square_pos)
     else:
         print("COMPLETE!!!!!")
         # break
