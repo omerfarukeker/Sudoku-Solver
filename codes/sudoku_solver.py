@@ -159,7 +159,7 @@ from init_board import init_board
 # (SOLVED) sudoku book 3 cok zor puzzle 2 pointing pairs
 # grid = "400000005060000010002306900008050200000704000007030500003902400020000080600000001"
 # (SOLVED) sudoku book 3 imkansiz puzzle 2 pointing pairs, X-wing
-# grid = "009004003030070090800900600001008007040010020600400500005002008080030070400700100"
+grid = "009004003030070090800900600001008007040010020600400500005002008080030070400700100"
 
 #use following to convert board tables to single line string:
 # grid = np.array2string(board.replace(".",0).values.flatten()).translate({ord(i): None for i in "[]\n "})
